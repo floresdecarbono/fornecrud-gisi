@@ -1,18 +1,12 @@
-import React from 'react';
-import { Route, Routes } from 'react-router-dom';
-import './assets/style/Main.css';
-import Form from './Form';
-import Home from './Home';
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import { BrowserRouter as Router } from 'react-router-dom'
+import App from './App.jsx'
 
-const Main = () => {
-  return (
-    <main>
-      <Routes>
-        <Route path='/' element={<Home />} />
-        <Route path='/cadastrar' element={<Form />}/>
-      </Routes>
-    </main>
-  )
-}
-
-export default Main
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <Router>
+      <App />
+    </Router>
+  </StrictMode>,
+)

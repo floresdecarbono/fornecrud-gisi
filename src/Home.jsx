@@ -24,7 +24,7 @@ const Home = () => {
     const sufixos = ['Solutions', 'Sistemas', 'Brasil', 'Consultoria', 'Group', 'Services', 'Partners', 'Indústria'];
     const categorias = ['Software', 'Hardware', 'Serviços'];
     const ufs = ['SP', 'RJ', 'MG', 'PR', 'SC', 'RS', 'BA', 'PE', 'CE', 'AM'];
-    const statusOpcoes = ['Ativo', 'Ativo', 'Inativo']; 
+    const statusOpcoes = ['Ativo', 'Ativo', 'Inativo'];
     
     const novasEmpresas = [];
 
@@ -34,19 +34,14 @@ const Home = () => {
       const nomeCompleto = `${nomeBase} ${sufixoBase} ${Math.floor(Math.random() * 99)}`;
       const cnpjFake = Math.floor(Math.random() * 90000000000000 + 10000000000000).toString();
       
-      const mesAleatorio = Math.floor(Math.random() * 4); 
-      const dataDoc = new Date();
-      dataDoc.setMonth(dataDoc.getMonth() - mesAleatorio);
-      
       novasEmpresas.push({
         Empresa: nomeCompleto,
         CNPJ: cnpjFake,
         Telefone: `(11) 9${Math.floor(Math.random() * 89999999 + 10000000)}`,
         Email: `${nomeBase.toLowerCase()}@empresa.com.br`,
         Categoria: categorias[Math.floor(Math.random() * categorias.length)],
-        Estado: ufs[Math.floor(Math.random() * ufs.length)], 
-        Status: statusOpcoes[Math.floor(Math.random() * statusOpcoes.length)], 
-        Data: dataDoc.toLocaleDateString('pt-BR') 
+        UF: ufs[Math.floor(Math.random() * ufs.length)], 
+        Status: statusOpcoes[Math.floor(Math.random() * statusOpcoes.length)] 
       });
     }
 
@@ -58,7 +53,7 @@ const Home = () => {
       });
 
       if (res.ok) {
-        alert("5 empresas aleatórias (com dados completos) foram adicionadas!");
+        alert("5 empresas aleatórias foram adicionadas!");
         getData(); 
       }
     } catch (err) {

@@ -17,9 +17,8 @@ const Form = () => {
     Telefone: '',
     Email: '',
     Categoria: '',
-    Estado: '', 
+    UF: '',      
     Status: 'Ativo', 
-    Data: new Date().toLocaleDateString('pt-BR'), 
   });
 
   useEffect(() => {
@@ -114,7 +113,7 @@ const Form = () => {
 
         <div className="input-group">
           <label>Estado (UF)</label>
-          <select name="Estado" value={dados.Estado} onChange={handleChange} required>
+          <select name="UF" value={dados.UF} onChange={handleChange} required>
             <option value="">Selecione um Estado</option>
             {estados.map(uf => (
               <option key={uf.id} value={uf.sigla}>{uf.nome}</option>

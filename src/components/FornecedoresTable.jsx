@@ -30,14 +30,13 @@ const FornecedoresTable = ({ dados, setDados }) => {
 
   return (
     <table id='tb-fornecedores'>
-      <caption>Fornecedores cadastrados e indicadores de base</caption>
+      <caption>Listagem de Fornecedores e Localização</caption>
       <thead>
         <tr>
           <th scope='col'>Empresa</th>
           <th scope='col'>CNPJ</th>
           <th scope='col'>UF</th>
           <th scope='col'>Status</th> 
-          <th scope='col'>Cadastro</th> 
           <th scope='col'>Categoria</th>
           <th scope='col'>Ações</th>
         </tr>
@@ -47,13 +46,12 @@ const FornecedoresTable = ({ dados, setDados }) => {
           <tr key={row.CNPJ || index}>
             <th className="company-name">{row.Empresa}</th>
             <td>{row.CNPJ}</td>
-            <td className="center-text">{row.Estado || '-'}</td>
+            <td className="center-text">{row.UF || '-'}</td>
             <td>
               <span className={`status-badge ${row.Status?.toLowerCase() === 'ativo' ? 'online' : 'offline'}`}>
                 {row.Status || 'Ativo'}
               </span>
             </td>
-            <td>{row.Data}</td>
             <td>{row.Categoria}</td>
             <td className="actions-cell">
               <button 

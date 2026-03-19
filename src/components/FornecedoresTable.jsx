@@ -1,7 +1,12 @@
-import React from 'react'
+import React, { useState } from 'react'
 import '../assets/style/Table.css';
+import { useNavigate } from 'react-router-dom';
 
 const FornecedoresTable = ({ dados }) => {
+
+  const [showEditar, setShowEditar] = useState(false);
+  const navigate = useNavigate();
+
 
   function handleDeletar(cnpj) {
     for (let i = 0; i < dados.length; i++) {
@@ -28,6 +33,8 @@ const FornecedoresTable = ({ dados }) => {
           <th scope='col' className='th-title'>Telefone</th>
           <th scope='col' className='th-title'>Email</th>
           <th scope='col' className='th-title'>Categoria</th>
+          <th scope='col' className='th-title'>UF</th>
+          <th scope='col' className='th-title'>Status</th>
           <th scope='col' className='th-title'>Ações</th>
         </tr>
       </thead>
@@ -42,8 +49,11 @@ const FornecedoresTable = ({ dados }) => {
             <td id={`${empresa}-email`} key={`${empresa}-email`}>{row.Email}</td>
             <td id={`${empresa}-categoria`} key={`${empresa}-categoria`}>{row.Categoria}</td>
             <td id={`${empresa}-acoes`} key={`${empresa}-acoes`}>
-              <button>Editar</button>
+              <button onClick={() => setShowEditar(!showEditar)}>Editar</button>
               <button onClick={() => handleDeletar(row.CNPJ)}>Deletar</button>
+
+              {showEditar && <div id='div-editar'></div>}
+
             </td>
             </tr>
           )

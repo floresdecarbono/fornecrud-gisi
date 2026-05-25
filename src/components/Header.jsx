@@ -1,4 +1,5 @@
-import React from 'react'
+import React from 'react';
+import { Link } from 'react-router-dom'; 
 import '../assets/style/Header.css';
 
 const Header = () => {
@@ -6,11 +7,12 @@ const Header = () => {
     <header>
       <h1>ForneCrud</h1>
       <nav id='nav-bar'>
-        <a href="/">Início</a>
-        <a href="/cadastrar">Cadastrar</a>
+        <Link to="/">Início</Link>
+        <Link to="/cadastrar">Cadastrar</Link>
+        <Link to="/dashboards">Dashboards</Link>
       </nav>
     </header>
-  )
+  );
 }
 
-export default Header
+export default Header;

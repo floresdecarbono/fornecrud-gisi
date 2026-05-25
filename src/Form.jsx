@@ -1,9 +1,15 @@
-import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import './assets/style/Form.css';
 
 const Form = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEditing = id !== undefined;
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [estados, setEstados] = useState([]); 
 
   const [dados, setDados] = useState({
     Empresa: '',
@@ -11,78 +17,127 @@ const Form = () => {
     Telefone: '',
     Email: '',
     Categoria: '',
+    UF: '',      
+    Status: 'Ativo', 
   });
 
+  useEffect(() => {
+    fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome')
+      .then(res => res.json())
+      .then(data => setEstados(data))
+      .catch(err => console.error("Erro ao carregar estados:", err));
+  }, []);
+
+  useEffect(() => {
+    if (isEditing) {
+      setLoading(true);
+      fetch(`https://api.sheetbest.com/sheets/0ef771ba-55b5-4f9c-a7d7-d163b10c90fe/${id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.length > 0) {
+            setDados(data[0]);
+          }
+          setLoading(false);
+        })
+        .catch(err => {
+          console.error(err);
+          setLoading(false);
+        });
+    }
+  }, [id, isEditing]);
+
   const handleChange = e => {
-    setDados({...dados, [e.target.name]: e.target.value});
-  }
+    const { name, value } = e.target;
+    if ((name === 'CNPJ' || name === 'Telefone') && /\D/.test(value.at(-1)) && value !== "") return;
+    setDados({ ...dados, [name]: value });
+  };
 
   const handleSubmit = async e => {
     e.preventDefault();
-    
-    try {
+    setLoading(true);
+    setError('');
 
-      let empresasExistentes = await fetch('https://api.sheetbest.com/sheets/0ef771ba-55b5-4f9c-a7d7-d163b10c90fe');
-      empresasExistentes = await empresasExistentes.json();
-    
-      let cnpjExistente = false;
-      empresasExistentes.forEach(empresa => {
-        if (empresa.CNPJ === dados.CNPJ) {
-          cnpjExistente = true;
+    try {
+      if (!isEditing) {
+        const resBusca = await fetch('https://api.sheetbest.com/sheets/3d8952f8-7fdb-43e6-b31d-f76bc6b1108b');
+        const empresasExistentes = await resBusca.json();
+        const cnpjExistente = empresasExistentes.some(empresa => empresa.CNPJ === dados.CNPJ);
+
+        if (cnpjExistente) {
+          setError('Este CNPJ já está cadastrado.');
+          setLoading(false);
           return;
         }
-      });
+      }
 
-      if (!cnpjExistente) {
-        const res = await fetch('https://api.sheetbest.com/sheets/0ef771ba-55b5-4f9c-a7d7-d163b10c90fe', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const url = isEditing 
+        ? `https://api.sheetbest.com/sheets/3d8952f8-7fdb-43e6-b31d-f76bc6b1108b/${id}`
+        : 'https://api.sheetbest.com/sheets/3d8952f8-7fdb-43e6-b31d-f76bc6b1108b';
+      
+      const method = isEditing ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dados),
       });
 
       if (res.ok) {
+        alert(isEditing ? 'Atualizado com sucesso!' : 'Cadastrado com sucesso!');
         navigate('/');
       }
-    } else {
-      console.log('CNPJ já cadastrado');
+    } catch (err) {
+      setError('Erro na conexão.');
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-
-  } catch (err) {
-    console.error(err);
-  }
-  }
+  };
 
   return (
-    <form action="/" method='POST' id='form-container' onSubmit={handleSubmit}>
-      <label htmlFor="Empresa">
-        Nome da empresa    
-      </label>
-      <br />
-      <input type="text" id='empresa' name='Empresa' onChange={handleChange} />
-      <br />
+    <div className="form-wrapper">
+      <form id='form-container' onSubmit={handleSubmit}>
+        <h2>{isEditing ? 'Editar Fornecedor' : 'Cadastrar Novo Fornecedor'}</h2>
+        
+        {error && <p className="error-message">{error}</p>}
 
-      <label htmlFor="CNPJ">
-        CNPJ
-      </label>
-      <br />
-      <input type="text" id='cnpj' name='CNPJ' onChange={handleChange} />
-      <br />
+        <div className="input-group">
+          <label>Nome da Empresa</label>
+          <input type="text" name='Empresa' value={dados.Empresa} onChange={handleChange} required />
+        </div>
 
-      <label htmlFor="Telefone">
-        Telefone
-      </label>
-      <br />
-      <input type="tel" id='telefone' name='Telefone' onChange={handleChange} />
-      <br />
+        <div className="input-group">
+          <label>CNPJ</label>
+          <input type="text" name='CNPJ' value={dados.CNPJ} onChange={handleChange} required maxLength="14" disabled={isEditing} />
+        </div>
 
-      <label htmlFor="Email">
-        Email
-      </label>
-      <br />
-      <input type="email" id='email' name='Email' onChange={handleChange} />
-      <br />
+        <div className="input-group">
+          <label>Estado (UF)</label>
+          <select name="UF" value={dados.UF} onChange={handleChange} required>
+            <option value="">Selecione um Estado</option>
+            {estados.map(uf => (
+              <option key={uf.id} value={uf.sigla}>{uf.nome}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="input-group">
+          <label>Status de Ativação</label>
+          <select name="Status" value={dados.Status} onChange={handleChange} required>
+            <option value="Ativo">Ativo</option>
+            <option value="Inativo">Inativo</option>
+          </select>
+        </div>
+
+        <div className="input-group">
+          <label>Telefone</label>
+          <input type="tel" name='Telefone' value={dados.Telefone} onChange={handleChange} required />
+        </div>
+
+        <div className="input-group">
+          <label>E-mail Corporativo</label>
+          <input type="email" name='Email' value={dados.Email} onChange={handleChange} required />
+        </div>
 
       <label htmlFor="Categoria">Categoria</label>
       <br />
@@ -92,13 +147,15 @@ const Form = () => {
         <option value="Hardware">Hardware</option>
         <option value="Serviços">Serviços</option>
       </select>
+
       <br />
 
-      <button> 
-        Enviar
-      </button>
-    </form>
-  )
-}
+        <button type="submit" disabled={loading}>
+          {loading ? 'Processando...' : (isEditing ? 'Salvar Alterações' : 'Cadastrar Fornecedor')}
+        </button>
+      </form>
+    </div>
+  );
+};
 
-export default Form
+export default Form;
